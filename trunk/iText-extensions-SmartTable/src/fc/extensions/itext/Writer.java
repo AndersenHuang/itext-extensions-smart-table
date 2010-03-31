@@ -80,10 +80,10 @@ public final class Writer extends PdfPageEventHelper {
     private HashMap<Integer, Font> fontMap = new HashMap<Integer, Font>();
     private HashMap<Integer, Font> engFontMap = new HashMap<Integer, Font>();
 
-    public Writer(String pdfFile, String fontFile, String engFontFile) throws Exception {
+    public Writer(String pdfFile, Rectangle pageSize, String fontFile, String engFontFile) throws Exception {
         this.pdfFile = new File(pdfFile);
 
-        document = new Document(PageSize.A4);
+        document = new Document(pageSize);
         pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(this.pdfFile));
         pdfWriter.setPageEvent(this);
         document.open();
@@ -493,6 +493,7 @@ public final class Writer extends PdfPageEventHelper {
      * @return Y-coord of the bottom position of table
      */
     public float flushTable(PdfPTable table, float leftX, float topY) {
+        // table.setTableEvent(null);
         return table.writeSelectedRows(0, -1, leftX, topY, pdfWriterCB);
     }
 
