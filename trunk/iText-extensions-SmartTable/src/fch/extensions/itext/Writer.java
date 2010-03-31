@@ -141,7 +141,7 @@ public final class ITextClient extends PdfPageEventHelper {
         }
     }
 
-    public void setPageObject(Page pageObject) throws Exception {
+    public void setPage(Page pageObject) throws Exception {
         if (!isInited) {
             throw new Exception("ITextClient: Cannot do setPageObject() before init() !!!");
         }
