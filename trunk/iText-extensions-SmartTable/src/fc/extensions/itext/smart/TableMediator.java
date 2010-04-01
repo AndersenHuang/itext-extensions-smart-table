@@ -88,7 +88,7 @@ public class TableMediator {
                 tables[i].addCell(cell);
                 break;
             } catch (TableFlushedException tbex) {
-            } catch (TableFullException tex) {
+            } catch (TableWasFullException tex) {
                 if (i == (tables.length - 1)) {
                     return false;
                 }
@@ -97,13 +97,13 @@ public class TableMediator {
         return true;
     }
 
-    public final void addCellEx(Cell cell) throws Exception {
+    public final void addCellEx(Cell cell) throws TableWasFullException {
         for (int i = 0; i < tables.length; i++) {
             try {
                 tables[i].addCell(cell);
                 break;
             } catch (TableFlushedException tbex) {
-            } catch (TableFullException tex) {
+            } catch (TableWasFullException tex) {
                 if (i == (tables.length - 1)) {
                     throw tex;
                 }
@@ -111,28 +111,35 @@ public class TableMediator {
         }
     }
 
-
-    public final boolean addWrapCell(Cell cell) throws Exception {
-        int full = 0;
+    public final boolean addCrossRowCell(Cell cell) throws Exception {
         for (int i = 0; i < tables.length; i++) {
-            if (!tables[i].isFlushed()) {
-                if (tables[i].addWrapCell(cell)) {
-                    break;
-                } else {
-                    if (i == (tables.length - 1)) {
-                        return false;
-                    }
+            try {
+                tables[i].addCrossRowCell(cell);
+                break;
+            } catch (TableFlushedException tbex) {
+            } catch (TableWasFullException tex) {
+                if (i == (tables.length - 1)) {
+                    return false;
                 }
-            } else {
-                full++;
             }
-        }
-        if (full == tables.length) {
-            return false;
         }
         return true;
     }
 
+    public final void addCrossRowCellEx(Cell cell) throws Exception {
+        for (int i = 0; i < tables.length; i++) {
+            try {
+                tables[i].addCrossRowCell(cell);
+                break;
+            } catch (TableFlushedException tbex) {
+            } catch (TableWasFullException tex) {
+                if (i == (tables.length - 1)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     public final boolean flush() {
         boolean flushExeuted = false;

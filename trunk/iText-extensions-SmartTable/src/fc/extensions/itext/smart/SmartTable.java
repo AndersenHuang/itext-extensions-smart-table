@@ -30,8 +30,11 @@
 
 package fc.extensions.itext.smart;
 
+import com.itextpdf.text.DocumentException;
 import fc.extensions.itext.Writer;
 import com.itextpdf.text.pdf.PdfPTable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.beanutils.locale.LocaleBeanUtils;
 
 public final class SmartTable {
@@ -50,28 +53,21 @@ public final class SmartTable {
     private int defaultFontSize = 8;
     private boolean autoFlush = true;
 
-    public SmartTable() {
-    }
-
-    public SmartTable(Writer client) {
-        this.writer = client;
-    }
-
-    public SmartTable(Writer client, Position position, int columns, int rows) {
+    public SmartTable(Writer client, Position position, int columns, int rows) throws Exception {
         this(client, position, columns, rows, 9, 0f, null);
     }
 
-    public SmartTable(Writer client, Position position, int columns, int rows, int defaultFontSize, float borderWidth) {
+    public SmartTable(Writer client, Position position, int columns, int rows, int defaultFontSize, float borderWidth) throws Exception {
         this(client, position, columns, rows, defaultFontSize, borderWidth, null);
     }
 
-    public SmartTable(Writer client, Position position, int columns, int rows, int defaultFontSize, float borderWidth, int[] columnWidthsScale) {
+    public SmartTable(Writer client, Position position, int columns, int rows, int defaultFontSize, float borderWidth, int[] columnWidthsScale) throws Exception {
         this.writer = client;
         this.position = position;
         this.columns = columns;
         this.rows = rows;
         this.borderWidth = borderWidth;
-        this.columnWidthsScale = columnWidthsScale;
+        this.setColumnWidthsScale(columnWidthsScale);
         this.defaultFontSize = defaultFontSize;
     }
 
@@ -144,7 +140,10 @@ public final class SmartTable {
         return columnWidthsScale;
     }
 
-    public void setColumnWidthsScale(int[] columnWidthsScale) {
+    public void setColumnWidthsScale(int[] columnWidthsScale) throws Exception {
+        if (columnWidthsScale.length != this.columns) {
+            throw new Exception("the number of widths is different than the number of columns");
+        }
         this.columnWidthsScale = columnWidthsScale;
     }
 
@@ -172,7 +171,7 @@ public final class SmartTable {
         this.rows = rows;
     }
 
-    public void create() throws Exception {
+    private void create() {
         if (!created) {
             if (columnWidthsScale == null || columnWidthsScale.length == 0) {
                 columnWidthsScale = new int[columns];
@@ -180,7 +179,11 @@ public final class SmartTable {
                     columnWidthsScale[i] = 1;
                 }
             }
-            table = this.writer.createTable(columns, position.getWidth(), columnWidthsScale);
+            try {
+                table = this.writer.createTable(columns, position.getWidth(), columnWidthsScale);
+            } catch (DocumentException ex) {
+                Logger.getLogger(SmartTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
             table.getDefaultCell().setBorderWidth(borderWidth);
             table.getDefaultCell().setFixedHeight(rowFixedHeight);
             table.getDefaultCell().setPadding(0.2F);
@@ -188,19 +191,18 @@ public final class SmartTable {
         }
     }
 
-    private void checkFlush() throws Exception {
+    private void checkFlush() throws TableFlushedException {
         if (autoFlush) {
             if (cellCounter > columns * rows) {
-                throw new TableFlushedException("cant addCell after flushed! cellCounter: " + cellCounter + ",columns: " + columns + ",rows:" + rows);
+                throw new TableFlushedException("cant add Cell after flushed! cellCounter: " + cellCounter + ",columns: " + columns + ",rows:" + rows);
             }
-
             if (!flushed && cellCounter == columns * rows) {
                 flush();
             }
         }
     }
 
-    private boolean isFull() throws Exception {
+    private boolean isFull() {
         if (autoFlush) {
             if (flushed) {
                 return true;
@@ -213,23 +215,36 @@ public final class SmartTable {
         return false;
     }
 
-    private void checkCreate() throws Exception {
+    private void checkCreate() {
         if (!created) {
             create();
         }
     }
 
-    public void addEmptyCell() throws Exception {
+    /**
+     * add an empty cell
+     *
+     * @throws TableWasFullException
+     * @throws TableFlushedException
+     */
+    public void addEmptyCell() throws TableWasFullException, TableFlushedException {
         checkCreate();
         this.writer.addEmptyCell(table, borderWidth);
         cellCounter++;
         checkFlush();
     }
 
-    public void addCell(String content) throws Exception {
+    /**
+     * add a cell with DBCS content, use table's borderwidth, fontsize and etc,.
+     * 
+     * @param content
+     * @throws TableWasFullException
+     * @throws TableFlushedException
+     */
+    public void addCell(String content) throws TableWasFullException, TableFlushedException {
         checkCreate();
         if (isFull()) {
-            throw new TableFullException();
+            throw new TableWasFullException();
         } else {
             cellCounter++;
             this.writer.addCell(table, content, defaultFontSize, borderWidth, 1);
@@ -237,10 +252,17 @@ public final class SmartTable {
         }
     }
 
-    public void addEngCell(String content) throws Exception {
+    /**
+     * add a cell with ANSI char content, use table's borderwidth, fontsize and etc,.
+     *
+     * @param content
+     * @throws TableWasFullException
+     * @throws TableFlushedException
+     */
+    public void addEngCell(String content) throws TableWasFullException, TableFlushedException {
         checkCreate();
         if (isFull()) {
-            throw new TableFullException();
+            throw new TableWasFullException();
         } else {
             cellCounter ++;
             this.writer.addEngCell(table, content, defaultFontSize, borderWidth, 1);
@@ -248,24 +270,36 @@ public final class SmartTable {
         }
     }
 
-    public void addCell(Cell cell) throws Exception {
+    /**
+     * add a cell by Cell object, use it's attributes.
+     *
+     * @param cell
+     * @throws TableWasFullException
+     * @throws TableFlushedException
+     */
+    public void addCell(Cell cell) throws TableWasFullException, TableFlushedException {
         checkCreate();
         cellCounter += cell.getColspan();
         if (isFull()) {
-            throw new TableFullException();
+            throw new TableWasFullException();
         } else {
             this.writer.addCell(table, cell);
             checkFlush();
         }
     }
 
-    public void addCrossRowCellEx(Cell cell) throws Exception {
-        if (cell.getColspan() > 1) {
-            throw new Exception("addWrapCell(): cell's column span must equal to 1 !!!");
-        }
-        if (cell.getMaxWidth() <= 0) {
-            throw new Exception("addWrapCell(): cell's Max Width must be inited !!!");
-        }
+    /**
+     * add a cell, wrap the content into next row.
+     *
+     * @param content
+     * @param maxCellWidth
+     * @throws TableWasFullException
+     * @throws TableFlushedException
+     */
+    public void addCrossRowCell(String content, float maxCellWidth) throws TableWasFullException, TableFlushedException {
+        Cell cell = new Cell(content);
+        cell.setColspan(1);
+        cell.setMaxWidth(maxCellWidth);
         checkCreate();
         float stringWidth = writer.getStringWidth(cell.getContent(), cell.getFontSize());
         if (stringWidth > cell.getMaxWidth()) {
@@ -274,13 +308,16 @@ public final class SmartTable {
             cellCounter++;
         }
         if (isFull()) {
-            throw new TableFullException();
+            throw new TableWasFullException();
         } else {
             this.writer.addCell(table, cell);
             checkFlush();
         }
     }
-    
+
+    /**
+     * render this table.
+     */
     public void flush() {
         if (!flushed) {
             float bottom = this.writer.flushTable(table, position.getLeft(), position.getTop());
