@@ -8,6 +8,7 @@ import fc.extensions.itext.smart.TableMediator;
 
 
 public class HelloSmartTable {
+
     public static void main (String args[]) throws Exception {
         Writer writer = new Writer("HelloSmartTable.pdf", PageSize.A4, "C:\\WINDOWS\\Fonts\\msjh.ttf", "C:\\WINDOWS\\Fonts\\consola.ttf");
 
@@ -20,14 +21,24 @@ public class HelloSmartTable {
     // 2. two column table
     // 3. table cross page
 
+    /**
+     * 2x3 table
+     *
+     * @param w
+     * @throws Exception
+     */
     private static void createTable1(Writer w) throws Exception {
         Position p = new Position(10, 10, 200, 600);
 
-        SmartTable t = new SmartTable(w, p, 1, 2, 1F);
+        SmartTable t = new SmartTable(w, p, 2, 2, 9, .5f);
         TableMediator tm = new TableMediator(t);
-        tm.addCell(new Cell("abc"));
-        tm.addCell(new Cell("def"));
+        tm.addCell("小格1");
+        tm.addCell("小格2");
+        tm.addEngCell("Cell3");
+        tm.addEngCell("Cell4");
+        tm.addEngCell("Cell5");
         tm.flush();
-
     }
+    
+
 }

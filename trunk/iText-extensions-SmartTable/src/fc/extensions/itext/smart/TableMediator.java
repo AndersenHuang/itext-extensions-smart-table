@@ -30,6 +30,9 @@
 
 package fc.extensions.itext.smart;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class TableMediator {
 
     protected SmartTable[] tables = null;
@@ -51,34 +54,35 @@ public class TableMediator {
         tables[0].setReplicatorPosition(table.getPosition());
     }
 
-    public final void addCell(Cell cell) throws Exception {
+    public final void addEmptyCell(float borderWidth) throws Exception {
         for (int i = 0; i < tables.length; i++) {
             if (!tables[i].isFlushed()) {
-                tables[i].addCell(cell);
+                tables[i].addEmptyCell();
                 break;
             }
         }
     }
 
-    public final boolean addWrapCell(Cell cell) throws Exception {
-        int full = 0;
+    public final void addCell(String s) {
         for (int i = 0; i < tables.length; i++) {
             if (!tables[i].isFlushed()) {
-                if (tables[i].addWrapCell(cell)) {
-                    break;
-                } else {
-                    if (i == (tables.length - 1)) {
-                        return false;
-                    }
-                }
-            } else {
-                full++;
+                try {
+                    tables[i].addCell(s);
+                } catch (Exception ex) {}
+                break;
             }
         }
-        if (full == tables.length) {
-            return false;
+    }
+
+    public final void addEngCell(String s) {
+        for (int i = 0; i < tables.length; i++) {
+            if (!tables[i].isFlushed()) {
+                try {
+                    tables[i].addEngCell(s);
+                } catch (Exception ex) {}
+                break;
+            }
         }
-        return true;
     }
 
     public final boolean addSmartCell(Cell cell) throws Exception {
@@ -106,53 +110,6 @@ public class TableMediator {
                 if (i == (tables.length - 1)) {
                     throw tex;
                 }
-            }
-        }
-    }
-
-    public final boolean addSmartEngCell(Cell cell) throws Exception {
-        for (int i = 0; i < tables.length; i++) {
-            try {
-                tables[i].addSmartEngCell(cell);
-                break;
-            } catch (TableFlushedException tbex) {
-            } catch (TableFullException tex) {
-                if (i == (tables.length - 1)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    public final void addSmartEngCellEx(Cell cell) throws Exception {
-        for (int i = 0; i < tables.length; i++) {
-            try {
-                tables[i].addSmartEngCell(cell);
-                break;
-            } catch (TableFlushedException tbex) {
-            } catch (TableFullException tex) {
-                if (i == (tables.length - 1)) {
-                    throw tex;
-                }
-            }
-        }
-    }
-
-    public final void addEngCell(Cell cell) throws Exception {
-        for (int i = 0; i < tables.length; i++) {
-            if (!tables[i].isFlushed()) {
-                tables[i].addEngCell(cell);
-                break;
-            }
-        }
-    }
-
-    public final void addEmptyCell(float borderWidth) throws Exception {
-        for (int i = 0; i < tables.length; i++) {
-            if (!tables[i].isFlushed()) {
-                tables[i].addEmptyCell(borderWidth);
-                break;
             }
         }
     }

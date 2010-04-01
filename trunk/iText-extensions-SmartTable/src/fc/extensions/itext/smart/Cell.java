@@ -51,11 +51,18 @@ public class Cell {
         public static final int BOX = PdfPCell.BOX;
         public static final int NO_BORDER = PdfPCell.NO_BORDER;
     }
-    
+
+    public static final class FontType {
+        private FontType() {}
+        public static final int NORMAL = 1;
+        public static final int DBCS = 2;
+    }
+
     private PdfPCell pdfPCell = null;
     private String content = "";
     private int fontSize = 8;
     private float maxWidth = -1F;
+    private int fontType = FontType.NORMAL;
 
     public Cell() {
         this("", 0F, 8, 1);
@@ -89,6 +96,14 @@ public class Cell {
         return pdfPCell;
     }
     
+    public int getFontType() {
+        return fontType;
+    }
+
+    public void setFontType(int fontType) {
+        this.fontType = fontType;
+    }
+
     public void setFollowingIndent(float followingindent) {
         pdfPCell.setFollowingIndent(followingindent);
     }
