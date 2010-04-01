@@ -30,9 +30,6 @@
 
 package fc.extensions.itext.smart;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class TableMediator {
 
     protected SmartTable[] tables = null;
@@ -85,10 +82,10 @@ public class TableMediator {
         }
     }
 
-    public final boolean addSmartCell(Cell cell) throws Exception {
+    public final boolean addCell(Cell cell) throws Exception {
         for (int i = 0; i < tables.length; i++) {
             try {
-                tables[i].addSmartCell(cell);
+                tables[i].addCell(cell);
                 break;
             } catch (TableFlushedException tbex) {
             } catch (TableFullException tex) {
@@ -100,10 +97,10 @@ public class TableMediator {
         return true;
     }
 
-    public final void addSmartCellEx(Cell cell) throws Exception {
+    public final void addCellEx(Cell cell) throws Exception {
         for (int i = 0; i < tables.length; i++) {
             try {
-                tables[i].addSmartCell(cell);
+                tables[i].addCell(cell);
                 break;
             } catch (TableFlushedException tbex) {
             } catch (TableFullException tex) {
@@ -113,6 +110,29 @@ public class TableMediator {
             }
         }
     }
+
+
+    public final boolean addWrapCell(Cell cell) throws Exception {
+        int full = 0;
+        for (int i = 0; i < tables.length; i++) {
+            if (!tables[i].isFlushed()) {
+                if (tables[i].addWrapCell(cell)) {
+                    break;
+                } else {
+                    if (i == (tables.length - 1)) {
+                        return false;
+                    }
+                }
+            } else {
+                full++;
+            }
+        }
+        if (full == tables.length) {
+            return false;
+        }
+        return true;
+    }
+
 
     public final boolean flush() {
         boolean flushExeuted = false;

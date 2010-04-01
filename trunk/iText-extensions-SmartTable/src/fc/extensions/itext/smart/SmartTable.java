@@ -228,65 +228,27 @@ public final class SmartTable {
 
     public void addCell(String content) throws Exception {
         checkCreate();
-        this.writer.addCell(table, content, defaultFontSize, borderWidth, 1);
-        cellCounter++;
-        checkFlush();
+        if (isFull()) {
+            throw new TableFullException();
+        } else {
+            cellCounter++;
+            this.writer.addCell(table, content, defaultFontSize, borderWidth, 1);
+            checkFlush();
+        }
     }
 
     public void addEngCell(String content) throws Exception {
         checkCreate();
-        this.writer.addEngCell(table, content, defaultFontSize, borderWidth, 1);
-        cellCounter ++;
-        checkFlush();
-    }
-
-    public boolean addCell(Cell cell) throws Exception {
-        if (cell.getColspan() > 1) {
-            throw new Exception("addWrapCell(): cell's column span must equal to 1 !!!");
-        }
-        if (cell.getMaxWidth() <= 0) {
-            throw new Exception("addWrapCell(): cell's Max Width must be inited !!!");
-        }
-        checkCreate();
-        float stringWidth = writer.getStringWidth(cell.getContent(), cell.getFontSize());
-        if (stringWidth > cell.getMaxWidth()) {
-            cellCounter += (1 + (int) (stringWidth / cell.getMaxWidth()) * this.columns);
-        } else {
-            cellCounter++;
-        }
-        if (isFull()) {
-            return false;
-        } else {
-            this.writer.addCell(table, cell);
-            checkFlush();
-            return true;
-        }
-    }
-
-    public void addCellEx(Cell cell) throws Exception {
-        if (cell.getColspan() > 1) {
-            throw new Exception("addWrapCell(): cell's column span must equal to 1 !!!");
-        }
-        if (cell.getMaxWidth() <= 0) {
-            throw new Exception("addWrapCell(): cell's Max Width must be inited !!!");
-        }
-        checkCreate();
-        float stringWidth = writer.getStringWidth(cell.getContent(), cell.getFontSize());
-        if (stringWidth > cell.getMaxWidth()) {
-            cellCounter += (1 + (int) (stringWidth / cell.getMaxWidth()) * this.columns);
-        } else {
-            cellCounter++;
-        }
         if (isFull()) {
             throw new TableFullException();
         } else {
-            this.writer.addCell(table, cell);
+            cellCounter ++;
+            this.writer.addEngCell(table, content, defaultFontSize, borderWidth, 1);
             checkFlush();
         }
     }
-    
-    
-    public void addSmartCell(Cell cell) throws Exception {
+
+    public void addCell(Cell cell) throws Exception {
         checkCreate();
         cellCounter += cell.getColspan();
         if (isFull()) {
@@ -297,6 +259,28 @@ public final class SmartTable {
         }
     }
 
+    public void addCrossRowCellEx(Cell cell) throws Exception {
+        if (cell.getColspan() > 1) {
+            throw new Exception("addWrapCell(): cell's column span must equal to 1 !!!");
+        }
+        if (cell.getMaxWidth() <= 0) {
+            throw new Exception("addWrapCell(): cell's Max Width must be inited !!!");
+        }
+        checkCreate();
+        float stringWidth = writer.getStringWidth(cell.getContent(), cell.getFontSize());
+        if (stringWidth > cell.getMaxWidth()) {
+            cellCounter += (1 + (int) (stringWidth / cell.getMaxWidth()) * this.columns);
+        } else {
+            cellCounter++;
+        }
+        if (isFull()) {
+            throw new TableFullException();
+        } else {
+            this.writer.addCell(table, cell);
+            checkFlush();
+        }
+    }
+    
     public void flush() {
         if (!flushed) {
             float bottom = this.writer.flushTable(table, position.getLeft(), position.getTop());
