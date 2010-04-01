@@ -47,7 +47,7 @@ public final class SmartTable {
     private Position position = null;
     private Position replicatorPosition = null;
     private int rowFixedHeight = 14;
-    private int colDefaultFontSize = 8;
+    private int defaultFontSize = 8;
     private boolean autoFlush = true;
 
     public SmartTable() {
@@ -58,20 +58,21 @@ public final class SmartTable {
     }
 
     public SmartTable(Writer client, Position position, int columns, int rows) {
-        this(client, position, columns, rows, 0f, null);
+        this(client, position, columns, rows, 9, 0f, null);
     }
 
-    public SmartTable(Writer client, Position position, int columns, int rows, float borderWidth) {
-        this(client, position, columns, rows, borderWidth, null);
+    public SmartTable(Writer client, Position position, int columns, int rows, int defaultFontSize, float borderWidth) {
+        this(client, position, columns, rows, defaultFontSize, borderWidth, null);
     }
 
-    public SmartTable(Writer client, Position position, int columns, int rows, float borderWidth, int[] columnWidthsScale) {
+    public SmartTable(Writer client, Position position, int columns, int rows, int defaultFontSize, float borderWidth, int[] columnWidthsScale) {
         this.writer = client;
         this.position = position;
         this.columns = columns;
         this.rows = rows;
         this.borderWidth = borderWidth;
         this.columnWidthsScale = columnWidthsScale;
+        this.defaultFontSize = defaultFontSize;
     }
 
     public SmartTable(SmartTable tableObject) throws Exception {
@@ -95,12 +96,12 @@ public final class SmartTable {
         this.writer = Writer;
     }
 
-    public int getColDefaultFontSize() {
-        return colDefaultFontSize;
+    public int getDefaultFontSize() {
+        return defaultFontSize;
     }
 
-    public void setColDefaultFontSize(int colDefaultFontSize) {
-        this.colDefaultFontSize = colDefaultFontSize;
+    public void setDefaultFontSize(int defaultFontSize) {
+        this.defaultFontSize = defaultFontSize;
     }
 
     public int getRowFixedHeight() {
@@ -218,43 +219,28 @@ public final class SmartTable {
         }
     }
 
-    public void addCell(String content) throws Exception {
-        addCell(content, 0F);
-    }
-
     public void addEmptyCell() throws Exception {
-        addEmptyCell(0F);
-    }
-
-    public void addEmptyCell(float borderWidth) throws Exception {
         checkCreate();
         this.writer.addEmptyCell(table, borderWidth);
         cellCounter++;
         checkFlush();
     }
 
-    public void addCell(String content, float borderWidth) throws Exception {
+    public void addCell(String content) throws Exception {
         checkCreate();
-        this.writer.addCell(table, content, 8, borderWidth, 1, 8F);
+        this.writer.addCell(table, content, defaultFontSize, borderWidth, 1);
         cellCounter++;
         checkFlush();
     }
 
-    public void addCell(Cell cell) throws Exception {
+    public void addEngCell(String content) throws Exception {
         checkCreate();
-        this.writer.addCell(table, cell);
-        cellCounter += cell.getColspan();
+        this.writer.addEngCell(table, content, defaultFontSize, borderWidth, 1);
+        cellCounter ++;
         checkFlush();
     }
 
-    public void addEngCell(Cell cell) throws Exception {
-        checkCreate();
-        this.writer.addEngCell(table, cell);
-        cellCounter += cell.getColspan();
-        checkFlush();
-    }
-
-    public boolean addWrapCell(Cell cell) throws Exception {
+    public boolean addCell(Cell cell) throws Exception {
         if (cell.getColspan() > 1) {
             throw new Exception("addWrapCell(): cell's column span must equal to 1 !!!");
         }
@@ -277,7 +263,7 @@ public final class SmartTable {
         }
     }
 
-    public void addWrapCellEx(Cell cell) throws Exception {
+    public void addCellEx(Cell cell) throws Exception {
         if (cell.getColspan() > 1) {
             throw new Exception("addWrapCell(): cell's column span must equal to 1 !!!");
         }
@@ -307,17 +293,6 @@ public final class SmartTable {
             throw new TableFullException();
         } else {
             this.writer.addCell(table, cell);
-            checkFlush();
-        }
-    }
-
-    public void addSmartEngCell(Cell cell) throws Exception {
-        checkCreate();
-        cellCounter += cell.getColspan();
-        if (isFull()) {
-            throw new TableFullException();
-        } else {
-            this.writer.addEngCell(table, cell);
             checkFlush();
         }
     }

@@ -453,35 +453,45 @@ public final class Writer extends PdfPageEventHelper {
         return pdfTable;
     }
 
-    public void addCell(PdfPTable table, String content, int fontSize, float borderWidth, int columnSpan, float fixedHeight) {
-        PdfPCell pdfCell = new PdfPCell();
-        if (columnSpan > 1) {
-            pdfCell.setColspan(columnSpan);
-        }
-        pdfCell.setFixedHeight(fixedHeight);
-        pdfCell.setBorderWidth(borderWidth);
-        pdfCell.setPhrase(new Phrase(content, getFont(fontSize)));
-        pdfCell.setNoWrap(false);
-        pdfCell.setHorizontalAlignment(PdfContentByte.ALIGN_LEFT);
-        pdfCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        table.addCell(pdfCell);
-    }
-
-    public void addCell(PdfPTable table, Cell cell) {
-        PdfPCell pcell = cell.getPdfPCell();
-        pcell.setPhrase(new Phrase(cell.getContent(), getFont(cell.getFontSize())));
-        table.addCell(pcell);
-    }
-
     public void addEmptyCell(PdfPTable table, float borderWidth) {
         table.getDefaultCell().setBorderWidth(borderWidth);
         table.addCell("");
     }
 
-    public void addEngCell(PdfPTable table, Cell cell) {
-        PdfPCell pcell = cell.getPdfPCell();
-        pcell.setPhrase(new Phrase(cell.getContent(), getEngFont(cell.getFontSize())));
-        table.addCell(pcell);
+    public void addCell(PdfPTable table, String content, int fontSize, float borderWidth, int columnSpan) {
+        PdfPCell pCell = new PdfPCell();
+        if (columnSpan > 1) {
+            pCell.setColspan(columnSpan);
+        }
+        pCell.setBorderWidth(borderWidth);
+        pCell.setPhrase(new Phrase(content, getFont(fontSize)));
+        pCell.setNoWrap(false);
+        pCell.setHorizontalAlignment(PdfContentByte.ALIGN_LEFT);
+        pCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        table.addCell(pCell);
+    }
+
+    public void addEngCell(PdfPTable table, String content, int fontSize, float borderWidth, int columnSpan) {
+        PdfPCell pCell = new PdfPCell();
+        if (columnSpan > 1) {
+            pCell.setColspan(columnSpan);
+        }
+        pCell.setBorderWidth(borderWidth);
+        pCell.setPhrase(new Phrase(content, getEngFont(fontSize)));
+        pCell.setNoWrap(false);
+        pCell.setHorizontalAlignment(PdfContentByte.ALIGN_LEFT);
+        pCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        table.addCell(pCell);
+    }
+
+    public void addCell(PdfPTable table, Cell cell) {
+        PdfPCell pCell = cell.getPdfPCell();
+        if (cell.getFontType() == Cell.FontType.DBCS) {
+            pCell.setPhrase(new Phrase(cell.getContent(), getFont(cell.getFontSize())));
+        } else {
+            pCell.setPhrase(new Phrase(cell.getContent(), getEngFont(cell.getFontSize())));
+        }
+        table.addCell(pCell);
     }
 
     /**
