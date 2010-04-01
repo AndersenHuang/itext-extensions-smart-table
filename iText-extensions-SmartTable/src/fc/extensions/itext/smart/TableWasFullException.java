@@ -35,7 +35,7 @@ package fc.extensions.itext.smart;
  * 
  * @author F.C. Huang
  */
-public class TableFullException extends Exception {
+public class TableWasFullException extends Exception {
 
 
 }
