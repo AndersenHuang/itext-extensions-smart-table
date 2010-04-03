@@ -10,16 +10,9 @@ import fc.extensions.itext.smart.TableMediator;
 public class HelloSmartTable {
 
     public static void main (String args[]) throws Exception {
-        Writer writer = new Writer("HelloSmartTable.pdf", PageSize.A4, "C:\\WINDOWS\\Fonts\\msjh.ttf", "C:\\WINDOWS\\Fonts\\consola.ttf");
-
-        createTable1(writer);
-
-        writer.close();
+        createTable1();
+        createTable2();
     }
-
-    // 1. single table
-    // 2. two column table
-    // 3. table cross page
 
     /**
      * 2x3 table
@@ -27,18 +20,46 @@ public class HelloSmartTable {
      * @param w
      * @throws Exception
      */
-    private static void createTable1(Writer w) throws Exception {
-        Position p = new Position(10, 10, 200, 600);
+    private static void createTable1() throws Exception {
+        Writer w = new Writer("table1.pdf", PageSize.A4, "C:\\WINDOWS\\Fonts\\msjh.ttf", "C:\\WINDOWS\\Fonts\\consola.ttf");
+        Position p = new Position(10, 10, 200, 800);
 
-        SmartTable t = new SmartTable(w, p, 2, 2, 9, .5f);
+        SmartTable t = new SmartTable(w, p, 2, 3, 9, .5f);
         TableMediator tm = new TableMediator(t);
         tm.addCell("小格1");
         tm.addCell("小格2");
-        tm.addEngCell("Cell3");
-        tm.addEngCell("Cell4");
-        tm.addEngCell("Cell5");
-        tm.flush();
+        tm.addAnsiCell("Cell3");
+        tm.addAnsiCell("Cell4");
+        tm.addAnsiCell("Cell5");
+        tm.addAnsiCell("Cell6");
+        boolean isCellAdded = tm.addAnsiCell("Cell7");
+        System.out.println("isCellAdded:" + isCellAdded);
+        
+        w.close();
     }
-    
+
+    /**
+     * mediate two 2x2 table
+     *
+     * @param w
+     * @throws Exception
+     */
+    private static void createTable2() throws Exception {
+        Writer w = new Writer("table2.pdf", PageSize.A4, "C:\\WINDOWS\\Fonts\\msjh.ttf", "C:\\WINDOWS\\Fonts\\consola.ttf");
+        Position p = new Position(10, 10, 200, 800);
+
+        SmartTable t = new SmartTable(w, p, 2, 2, 9, .5f);
+        TableMediator tm = new TableMediator(t, 2, 5f);
+        tm.addCell("小格1");
+        tm.addCell("小格2");
+        tm.addAnsiCell("Cell3");
+        tm.addAnsiCell("Cell4");
+        tm.addAnsiCell("Cell5");
+        tm.addAnsiCell("Cell6");
+        tm.addAnsiCell("Cell7");
+        tm.addAnsiCell("Cell8");
+
+        w.close();
+    }
 
 }

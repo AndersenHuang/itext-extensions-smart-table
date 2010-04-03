@@ -61,7 +61,7 @@ import org.apache.commons.lang.StringUtils;
 
 
 /**
- * A wrapper class of iText Framework
+ * A PdfWriter wrapper.
  * 
  * @author Andersen.
  */
@@ -79,7 +79,7 @@ public final class Writer extends PdfPageEventHelper {
     private PdfTemplate pageHeadTemplate = null;
     private Page pageObject = null;
     private HashMap<Integer, Font> fontMap = new HashMap<Integer, Font>();
-    private HashMap<Integer, Font> engFontMap = new HashMap<Integer, Font>();
+    private HashMap<Integer, Font> ansiFontMap = new HashMap<Integer, Font>();
 
     public Writer(String pdfFile, Rectangle pageSize, String fontFile, String engFontFile) throws Exception {
         this.pdfFile = new File(pdfFile);
@@ -101,11 +101,11 @@ public final class Writer extends PdfPageEventHelper {
         return fontMap.get(fontSize);
     }
 
-    private Font getEngFont(int fontSize) {
-        if (!engFontMap.containsKey(fontSize)) {
-            engFontMap.put(fontSize, new Font(engBaseFont, fontSize, Font.UNDEFINED, baseColor));
+    private Font getAnsiFont(int fontSize) {
+        if (!ansiFontMap.containsKey(fontSize)) {
+            ansiFontMap.put(fontSize, new Font(engBaseFont, fontSize, Font.UNDEFINED, baseColor));
         }
-        return engFontMap.get(fontSize);
+        return ansiFontMap.get(fontSize);
     }
 
     public void setDebug() {
@@ -472,13 +472,13 @@ public final class Writer extends PdfPageEventHelper {
         table.addCell(pCell);
     }
 
-    public void addEngCell(PdfPTable table, String content, int fontSize, float borderWidth, int columnSpan) {
+    public void addAnsiCell(PdfPTable table, String content, int fontSize, float borderWidth, int columnSpan) {
         PdfPCell pCell = new PdfPCell();
         if (columnSpan > 1) {
             pCell.setColspan(columnSpan);
         }
         pCell.setBorderWidth(borderWidth);
-        pCell.setPhrase(new Phrase(content, getEngFont(fontSize)));
+        pCell.setPhrase(new Phrase(content, getAnsiFont(fontSize)));
         pCell.setNoWrap(false);
         pCell.setHorizontalAlignment(PdfContentByte.ALIGN_LEFT);
         pCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -490,7 +490,7 @@ public final class Writer extends PdfPageEventHelper {
         if (cell.getFontType() == Cell.FontType.DBCS) {
             pCell.setPhrase(new Phrase(cell.getContent(), getFont(cell.getFontSize())));
         } else {
-            pCell.setPhrase(new Phrase(cell.getContent(), getEngFont(cell.getFontSize())));
+            pCell.setPhrase(new Phrase(cell.getContent(), getAnsiFont(cell.getFontSize())));
         }
         table.addCell(pCell);
     }

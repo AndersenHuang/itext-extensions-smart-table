@@ -37,6 +37,10 @@ package fc.extensions.itext.smart;
  */
 public class TableFlushedException extends Exception {
 
+    TableFlushedException() {
+        super();
+    }
+
     TableFlushedException(String s) {
         super(s);
     }
