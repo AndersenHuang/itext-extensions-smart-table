@@ -112,12 +112,6 @@ public final class Position {
         this.rows = iRows;
     }
 
-    /**
-     * decreaseRows
-     * 
-     * @param iRows
-     * @return true:該頁未填滿,可以繼續使用 false:該頁已填滿,不可以繼續使用
-     */
     public boolean decreaseRows(int iRows) {
         if (rows < iRows) {
             return false;

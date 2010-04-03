@@ -33,10 +33,16 @@ package fc.extensions.itext.smart;
 import com.itextpdf.text.DocumentException;
 import fc.extensions.itext.Writer;
 import com.itextpdf.text.pdf.PdfPTable;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.beanutils.locale.LocaleBeanUtils;
 
+/**
+ * A PdfPTable wrapper supports more functions.
+ * 
+ * @author Administrator
+ */
 public final class SmartTable {
 
     private boolean created = false,  flushed = false;
@@ -46,29 +52,32 @@ public final class SmartTable {
     private PdfPTable table = null;
     private Writer writer = null;
     private int[] columnWidthsScale = null;
+
     private int cellCounter = 0;
     private Position position = null;
     private Position replicatorPosition = null;
     private int rowFixedHeight = 14;
-    private int defaultFontSize = 8;
+    private int cellFontSize = 9;
     private boolean autoFlush = true;
 
-    public SmartTable(Writer client, Position position, int columns, int rows) throws Exception {
-        this(client, position, columns, rows, 9, 0f, null);
+    public SmartTable(Writer client, Position position, int columns, int rows, int cellFontSize, float borderWidth) throws Exception {
+        this(client, position, columns, rows, cellFontSize, borderWidth, null);
     }
 
-    public SmartTable(Writer client, Position position, int columns, int rows, int defaultFontSize, float borderWidth) throws Exception {
-        this(client, position, columns, rows, defaultFontSize, borderWidth, null);
-    }
-
-    public SmartTable(Writer client, Position position, int columns, int rows, int defaultFontSize, float borderWidth, int[] columnWidthsScale) throws Exception {
+    public SmartTable(Writer client, Position position, int columns, int rows, int cellFontSize, float borderWidth, int[] columnWidthsScale) throws Exception {
         this.writer = client;
         this.position = position;
         this.columns = columns;
         this.rows = rows;
         this.borderWidth = borderWidth;
-        this.setColumnWidthsScale(columnWidthsScale);
-        this.defaultFontSize = defaultFontSize;
+        this.cellFontSize = cellFontSize;
+
+        if (columnWidthsScale != null) {
+            if (columnWidthsScale.length != this.columns) {
+                throw new Exception("the number of widths is different than the number of columns");
+            }
+            this.columnWidthsScale = columnWidthsScale;
+        }
     }
 
     public SmartTable(SmartTable tableObject) throws Exception {
@@ -93,11 +102,11 @@ public final class SmartTable {
     }
 
     public int getDefaultFontSize() {
-        return defaultFontSize;
+        return cellFontSize;
     }
 
     public void setDefaultFontSize(int defaultFontSize) {
-        this.defaultFontSize = defaultFontSize;
+        this.cellFontSize = defaultFontSize;
     }
 
     public int getRowFixedHeight() {
@@ -136,17 +145,6 @@ public final class SmartTable {
         this.position = position;
     }
 
-    public int[] getColumnWidthsScale() {
-        return columnWidthsScale;
-    }
-
-    public void setColumnWidthsScale(int[] columnWidthsScale) throws Exception {
-        if (columnWidthsScale.length != this.columns) {
-            throw new Exception("the number of widths is different than the number of columns");
-        }
-        this.columnWidthsScale = columnWidthsScale;
-    }
-
     public float getBorderWidth() {
         return borderWidth;
     }
@@ -171,13 +169,19 @@ public final class SmartTable {
         this.rows = rows;
     }
 
+    public int[] getColumnWidthsScale() {
+        return columnWidthsScale;
+    }
+
+    public void setColumnWidthsScale(int[] columnWidthsScale) {
+        this.columnWidthsScale = columnWidthsScale;
+    }
+
     private void create() {
         if (!created) {
             if (columnWidthsScale == null || columnWidthsScale.length == 0) {
                 columnWidthsScale = new int[columns];
-                for (int i = 0; i < columnWidthsScale.length; i++) {
-                    columnWidthsScale[i] = 1;
-                }
+                Arrays.fill(columnWidthsScale, 1);
             }
             try {
                 table = this.writer.createTable(columns, position.getWidth(), columnWidthsScale);
@@ -191,10 +195,11 @@ public final class SmartTable {
         }
     }
 
-    private void checkFlush() throws TableFlushedException {
+    private void checkFlush() {
         if (autoFlush) {
             if (cellCounter > columns * rows) {
-                throw new TableFlushedException("cant add Cell after flushed! cellCounter: " + cellCounter + ",columns: " + columns + ",rows:" + rows);
+                Logger.getLogger(SmartTable.class.getName()).log(Level.SEVERE, "this case shouldn't be happened. cellCounter: " + cellCounter + ",columns: " + columns + ",rows:" + rows, new TableFlushedException());
+                return;
             }
             if (!flushed && cellCounter == columns * rows) {
                 flush();
@@ -225,9 +230,8 @@ public final class SmartTable {
      * add an empty cell
      *
      * @throws TableWasFullException
-     * @throws TableFlushedException
      */
-    public void addEmptyCell() throws TableWasFullException, TableFlushedException {
+    public void addEmptyCell() throws TableWasFullException {
         checkCreate();
         this.writer.addEmptyCell(table, borderWidth);
         cellCounter++;
@@ -239,15 +243,14 @@ public final class SmartTable {
      * 
      * @param content
      * @throws TableWasFullException
-     * @throws TableFlushedException
      */
-    public void addCell(String content) throws TableWasFullException, TableFlushedException {
+    public void addCell(String content) throws TableWasFullException {
         checkCreate();
         if (isFull()) {
             throw new TableWasFullException();
         } else {
             cellCounter++;
-            this.writer.addCell(table, content, defaultFontSize, borderWidth, 1);
+            this.writer.addCell(table, content, cellFontSize, borderWidth, 1);
             checkFlush();
         }
     }
@@ -257,15 +260,14 @@ public final class SmartTable {
      *
      * @param content
      * @throws TableWasFullException
-     * @throws TableFlushedException
      */
-    public void addEngCell(String content) throws TableWasFullException, TableFlushedException {
+    public void addAnsiCell(String content) throws TableWasFullException {
         checkCreate();
         if (isFull()) {
             throw new TableWasFullException();
         } else {
             cellCounter ++;
-            this.writer.addEngCell(table, content, defaultFontSize, borderWidth, 1);
+            this.writer.addAnsiCell(table, content, cellFontSize, borderWidth, 1);
             checkFlush();
         }
     }
@@ -275,9 +277,8 @@ public final class SmartTable {
      *
      * @param cell
      * @throws TableWasFullException
-     * @throws TableFlushedException
      */
-    public void addCell(Cell cell) throws TableWasFullException, TableFlushedException {
+    public void addCell(Cell cell) throws TableWasFullException {
         checkCreate();
         cellCounter += cell.getColspan();
         if (isFull()) {
@@ -294,9 +295,8 @@ public final class SmartTable {
      * @param content
      * @param maxCellWidth
      * @throws TableWasFullException
-     * @throws TableFlushedException
      */
-    public void addCrossRowCell(String content, float maxCellWidth) throws TableWasFullException, TableFlushedException {
+    public void addCrossRowCell(String content, float maxCellWidth) throws TableWasFullException {
         Cell cell = new Cell(content);
         cell.setColspan(1);
         cell.setMaxWidth(maxCellWidth);

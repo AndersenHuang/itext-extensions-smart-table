@@ -30,64 +30,81 @@
 
 package fc.extensions.itext.smart;
 
+/**
+ * The TableMediator will mediate tables in horizontal,
+ * it also offer two kinds of addCell method (return boolean or throws exception).
+ *
+ * @author Andersen
+ */
 public class TableMediator {
 
     protected SmartTable[] tables = null;
 
-    public TableMediator(SmartTable t) throws Exception {
-        this(t, 1, 0f);
+    /**
+     * mediate just one table.
+     *
+     * @param table The original table, it's attributes will be referenced by mediator.
+     * @throws Exception
+     */
+    public TableMediator(SmartTable table) throws Exception {
+        this(table, 1, 0f);
     }
 
-    public TableMediator(SmartTable table, int splitSize, float gapSize) throws Exception {
-        this.tables = new SmartTable[splitSize];
+    /**
+     * mediate multi tables.
+     *
+     * @param table The original table, it's attributes will be referenced by mediator.
+     * @param count How many tables in horizontal will be mediated.
+     * @param gap The gap between tables.
+     * @throws Exception
+     */
+    public TableMediator(SmartTable table, int count, float gap) throws Exception {
+        this.tables = new SmartTable[count];
         float left = table.getPosition().getLeft();
-        float width = (table.getPosition().getWidth() - (gapSize * (float) splitSize)) / (float) splitSize;
+        float width = (table.getPosition().getWidth() - (gap * (float)count)) / (float)count;
         for (int i = 0; i < tables.length; i++) {
             tables[i] = new SmartTable(table);
             tables[i].getPosition().setLeft(left);
             tables[i].getPosition().setRight(left + width);
-            left += (width + gapSize);
+            left += (width + gap);
         }
         tables[0].setReplicatorPosition(table.getPosition());
     }
 
-    public final void addEmptyCell(float borderWidth) throws Exception {
+    public final void addEmptyCellEx() throws TableWasFullException {
         for (int i = 0; i < tables.length; i++) {
-            if (!tables[i].isFlushed()) {
-                tables[i].addEmptyCell();
-                break;
-            }
+            tables[i].addEmptyCell();
+            break;
         }
     }
 
-    public final void addCell(String s) {
-        for (int i = 0; i < tables.length; i++) {
-            if (!tables[i].isFlushed()) {
-                try {
-                    tables[i].addCell(s);
-                } catch (Exception ex) {}
-                break;
-            }
-        }
-    }
-
-    public final void addEngCell(String s) {
-        for (int i = 0; i < tables.length; i++) {
-            if (!tables[i].isFlushed()) {
-                try {
-                    tables[i].addEngCell(s);
-                } catch (Exception ex) {}
-                break;
-            }
-        }
-    }
-
-    public final boolean addCell(Cell cell) throws Exception {
+    public final boolean addEmptyCell() {
         for (int i = 0; i < tables.length; i++) {
             try {
-                tables[i].addCell(cell);
+                tables[i].addEmptyCell();
                 break;
-            } catch (TableFlushedException tbex) {
+            } catch (TableWasFullException tex) {
+                if (i == (tables.length - 1)) {
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+
+    public final void addCellEx(String s) throws TableWasFullException {
+        for (int i = 0; i < tables.length; i++) {
+            tables[i].addCell(s);
+            break;
+        }
+    }
+
+    public final boolean addCell(String s) {
+        for (int i = 0; i < tables.length; i++) {
+            try {
+                tables[i].addCell(s);
+                break;
             } catch (TableWasFullException tex) {
                 if (i == (tables.length - 1)) {
                     return false;
@@ -99,24 +116,16 @@ public class TableMediator {
 
     public final void addCellEx(Cell cell) throws TableWasFullException {
         for (int i = 0; i < tables.length; i++) {
+            tables[i].addCell(cell);
+            break;
+        }
+    }
+
+    public final boolean addCell(Cell cell) throws Exception {
+        for (int i = 0; i < tables.length; i++) {
             try {
                 tables[i].addCell(cell);
                 break;
-            } catch (TableFlushedException tbex) {
-            } catch (TableWasFullException tex) {
-                if (i == (tables.length - 1)) {
-                    throw tex;
-                }
-            }
-        }
-    }
-
-    public final boolean addCrossRowCell(Cell cell) throws Exception {
-        for (int i = 0; i < tables.length; i++) {
-            try {
-                tables[i].addCrossRowCell(cell);
-                break;
-            } catch (TableFlushedException tbex) {
             } catch (TableWasFullException tex) {
                 if (i == (tables.length - 1)) {
                     return false;
@@ -126,12 +135,19 @@ public class TableMediator {
         return true;
     }
 
-    public final void addCrossRowCellEx(Cell cell) throws Exception {
+    public final void addAnsiCellEx(String s) throws TableWasFullException {
+        for (int i = 0; i < tables.length; i++) {
+            tables[i].addAnsiCell(s);
+            break;
+        }
+    }
+
+
+    public final boolean addAnsiCell(String s) {
         for (int i = 0; i < tables.length; i++) {
             try {
-                tables[i].addCrossRowCell(cell);
+                tables[i].addAnsiCell(s);
                 break;
-            } catch (TableFlushedException tbex) {
             } catch (TableWasFullException tex) {
                 if (i == (tables.length - 1)) {
                     return false;
@@ -139,6 +155,27 @@ public class TableMediator {
             }
         }
         return true;
+    }
+
+    public final boolean addCrossRowCell(String content, float maxCellWidth) {
+        for (int i = 0; i < tables.length; i++) {
+            try {
+                tables[i].addCrossRowCell(content, maxCellWidth);
+                break;
+            } catch (TableWasFullException tex) {
+                if (i == (tables.length - 1)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public final void addCrossRowCellEx(String content, float maxCellWidth) throws TableWasFullException {
+        for (int i = 0; i < tables.length; i++) {
+            tables[i].addCrossRowCell(content, maxCellWidth);
+            break;
+        }
     }
 
     public final boolean flush() {

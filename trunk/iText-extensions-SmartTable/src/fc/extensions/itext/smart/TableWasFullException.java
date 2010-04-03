@@ -30,11 +30,6 @@
 
 package fc.extensions.itext.smart;
 
-/**
- * 表示該 table 已滿 or flushed, 無法再新增任何 cell
- * 
- * @author F.C. Huang
- */
 public class TableWasFullException extends Exception {
 
 
