@@ -81,7 +81,7 @@ public final class Writer extends PdfPageEventHelper {
     private HashMap<Integer, Font> fontMap = new HashMap<Integer, Font>();
     private HashMap<Integer, Font> ansiFontMap = new HashMap<Integer, Font>();
 
-    public Writer(String pdfFile, Rectangle pageSize, String fontFile, String engFontFile) throws Exception {
+    public Writer(String pdfFile, Rectangle pageSize, String fontPath, String ansiFontPath) throws Exception {
         this.pdfFile = new File(pdfFile);
 
         document = new Document(pageSize);
@@ -90,8 +90,8 @@ public final class Writer extends PdfPageEventHelper {
         document.open();
         pdfWriterCB = pdfWriter.getDirectContent();
         baseColor = BaseColor.BLACK;
-        baseFont = BaseFont.createFont(fontFile, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
-        engBaseFont = BaseFont.createFont(engFontFile, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+        baseFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+        engBaseFont = BaseFont.createFont(ansiFontPath, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
     }
 
     private Font getFont(int fontSize) {
