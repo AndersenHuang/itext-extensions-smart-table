@@ -71,11 +71,12 @@ public class TableMediator {
         tables[0].setReplicatorPosition(table.getPosition());
     }
 
-    public final void addEmptyCellEx() throws TableWasFullException {
+    public final TableMediator addEmptyCellEx() throws TableWasFullException {
         for (int i = 0; i < tables.length; i++) {
             tables[i].addEmptyCell();
             break;
         }
+        return this;
     }
 
     public final boolean addEmptyCell() {
@@ -93,11 +94,12 @@ public class TableMediator {
         return true;
     }
 
-    public final void addCellEx(String s) throws TableWasFullException {
+    public final TableMediator addCellEx(String s) throws TableWasFullException {
         for (int i = 0; i < tables.length; i++) {
             tables[i].addCell(s);
             break;
         }
+        return this;
     }
 
     public final boolean addCell(String s) {
@@ -114,11 +116,12 @@ public class TableMediator {
         return true;
     }
 
-    public final void addCellEx(Cell cell) throws TableWasFullException {
+    public final TableMediator addCellEx(Cell cell) throws TableWasFullException {
         for (int i = 0; i < tables.length; i++) {
             tables[i].addCell(cell);
             break;
         }
+        return this;
     }
 
     public final boolean addCell(Cell cell) throws Exception {
@@ -135,11 +138,12 @@ public class TableMediator {
         return true;
     }
 
-    public final void addAnsiCellEx(String s) throws TableWasFullException {
+    public final TableMediator addAnsiCellEx(String s) throws TableWasFullException {
         for (int i = 0; i < tables.length; i++) {
             tables[i].addAnsiCell(s);
             break;
         }
+        return this;
     }
 
 
@@ -171,11 +175,12 @@ public class TableMediator {
         return true;
     }
 
-    public final void addCrossRowCellEx(String content, float maxCellWidth) throws TableWasFullException {
+    public final TableMediator addCrossRowCellEx(String content, float maxCellWidth) throws TableWasFullException {
         for (int i = 0; i < tables.length; i++) {
             tables[i].addCrossRowCell(content, maxCellWidth);
             break;
         }
+        return this;
     }
 
     public final boolean flush() {
