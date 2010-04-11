@@ -50,11 +50,7 @@ public class HelloSmartTable {
 
         SmartTable t = new SmartTable(w, p, 2, 2, 9, .5f);
         TableMediator tm = new TableMediator(t, 2, 5f);
-        tm.addCell("小格1");
-        tm.addCell("小格2");
-        tm.addAnsiCell("Cell3");
-        tm.addAnsiCell("Cell4");
-        tm.addAnsiCell("Cell5");
+        tm.addCellEx("小格1").addCellEx("小格2").addAnsiCellEx("Cell3").addAnsiCellEx("Cell4").addAnsiCell("Cell5");
         tm.addAnsiCell("Cell6");
         tm.addAnsiCell("Cell7");
         tm.addAnsiCell("Cell8");
