@@ -1,8 +1,9 @@
 # itext-extensions-smart-table
 
 This extensions can use iText to create PDF tables more easily, reduce efforts when building E-Statement Java program.
-Please refer to the example below.
+Here is an example.
 
+```java
 Writer w = new Writer("table1.pdf", PageSize.A4, "C:\\WINDOWS\\Fonts\\msjh.ttf", "C:\\WINDOWS\\Fonts\\consola.ttf");
 Position p = new Position(10, 10, 200, 800);
 
@@ -19,3 +20,4 @@ boolean isCellAdded = tm.addAnsiCell("Cell7");
 System.out.println("isCellAdded:" + isCellAdded);
 
 w.close();
+```
